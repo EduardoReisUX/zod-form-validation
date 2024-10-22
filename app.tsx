@@ -9,12 +9,8 @@ const formSchema = z.object({
     .string({
       required_error: 'Por favor, digite seu nome!',
     })
-    .min(4, 'Deve conter pelo menos 4 letras!'),
-  lastName: z
-    .string({
-      required_error: 'Por favor, digite seu sobrenome!',
-    })
-    .min(2, 'Deve conter pelo menos 2 letras!'),
+    .min(4, 'Deve conter pelo menos 4 letras!')
+    .max(50, 'Deve conter até 50 letras!'),
   email: z
     .string({
       required_error: 'Por favor, digite seu email!',
@@ -24,12 +20,15 @@ const formSchema = z.object({
     .string({
       required_error: 'Por favor, digite seu número!',
     })
-    .regex(/\^[0-9]{10}/, 'Número deve ter 10 digitos!'),
+    .regex(/\d{10}/, 'Número deve ter 10 digitos!'),
+  message: z.string().max(50, 'Deve conter até 200 caracteres!'),
   services: z.enum(
     ['Webdesign', 'UX design', 'User research', 'Content creation'],
     { message: 'Por favor, escolha um serviço!' }
   ),
-  socialMedias: z.string(),
+  socialMedias: z
+    .array(z.string())
+    .nonempty('Pelo menos 1 deve ser selecionado!'),
 });
 
 export type FormType = z.infer<typeof formSchema>;
@@ -37,30 +36,33 @@ export type FormErrorsType = z.inferFormattedError<typeof formSchema>;
 
 // App.tsx
 
-function App() {
+export function App() {
   const [formError, setError] = useState<FormErrorsType>();
   const [formValues, setFormVaules] = useState<FormType>({
     firstName: '',
-    lastName: '',
     email: '',
     phone: '',
     services: '',
-    socialMedias: "",
+    socialMedias: [],
   });
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    debugger;
-
     const id = e.target.id;
     const value = e.target.value;
 
-    // if (e.target.type === "checkbox") {
-    //   setFormVaules({
-    //     ...formValues,
-    //     [id]: value,
-    //   });
-    //   return
-    // }
+    if (e.target.type === 'checkbox') {
+      return setFormVaules((prev) =>
+        prev.socialMedias.includes(value)
+          ? {
+              ...formValues,
+              [id]: prev.socialMedias.filter((service) => service !== value),
+            }
+          : {
+              ...formValues,
+              [id]: [...formValues.socialMedias, value],
+            }
+      );
+    }
 
     setFormVaules({
       ...formValues,
@@ -76,15 +78,18 @@ function App() {
       return setError(result.error.format());
     }
 
-    console.log('Data is valid!');
+    console.log('Mensagem enviada com sucesso!');
   };
 
   return (
-    <>
-      <form
-        style={{ margin: '0 2rem', display: 'grid', gap: '2rem' }}
-        onSubmit={handleOnSubmit}
-      >
+    <main style={{ margin: '0 2rem' }}>
+      <section>
+        <h2 style={{ margin: '-0.5rem 0' }}>Briefing</h2>
+        <p style={{ fontWeight: '500' }}>
+          para conhecermos melhor sobre você e seu negócio
+        </p>
+      </section>
+      <form style={{ display: 'grid', gap: '2rem' }} onSubmit={handleOnSubmit}>
         <div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <label htmlFor="firstName">Nome</label>
@@ -104,26 +109,8 @@ function App() {
             </small>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label htmlFor="lastName">Sobrenome</label>
-            <input
-              type="text"
-              id="lastName"
-              value={formValues.lastName}
-              onChange={handleOnChange}
-            />
-            <small
-              style={{
-                color: 'red',
-                display: formError?.lastName ? 'block' : 'none',
-              }}
-            >
-              {formError?.lastName?._errors}
-            </small>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
             <label htmlFor="email">E-mail</label>
             <input
-              type="email"
               id="email"
               value={formValues.email}
               onChange={handleOnChange}
@@ -221,7 +208,7 @@ function App() {
                 id="socialMedias"
                 value={'instagram'}
                 onChange={handleOnChange}
-                checked={formValues.socialMedias === 'instagram'}
+                checked={formValues.socialMedias.includes('instagram')}
               />
               Instagram
             </label>
@@ -232,7 +219,7 @@ function App() {
                 id="socialMedias"
                 value={'linkedin'}
                 onChange={handleOnChange}
-                checked={formValues.socialMedias === 'linkedin'}
+                checked={formValues.socialMedias.includes('linkedin')}
               />
               LinkedIn
             </label>
@@ -243,7 +230,7 @@ function App() {
                 id="socialMedias"
                 value={'whatsapp'}
                 onChange={handleOnChange}
-                checked={formValues.socialMedias === 'whatsapp'}
+                checked={formValues.socialMedias.includes('whatsapp')}
               />
               WhatsApp
             </label>
@@ -254,7 +241,7 @@ function App() {
                 id="socialMedias"
                 value={'referral'}
                 onChange={handleOnChange}
-                checked={formValues.socialMedias === 'referral'}
+                checked={formValues.socialMedias.includes('referral')}
               />
               Indicação
             </label>
@@ -271,8 +258,6 @@ function App() {
 
         <button>Enviar mensagem</button>
       </form>
-    </>
+    </main>
   );
 }
-
-export default App;
