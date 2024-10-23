@@ -42,6 +42,7 @@ export function App() {
     firstName: '',
     email: '',
     phone: '',
+    message: '',
     services: '',
     socialMedias: [],
   });
@@ -78,7 +79,17 @@ export function App() {
       return setError(result.error.format());
     }
 
-    console.log('Mensagem enviada com sucesso!');
+    alert('Mensagem enviada com sucesso!');
+  };
+
+  const handleOnBlur = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const id = event.target.id;
+    const result = formSchema.pick({ [id]: true }).safeParse(formValues);
+
+    if (result.error) {
+      return setError(result.error.format());
+    }
   };
 
   return (
@@ -98,6 +109,7 @@ export function App() {
               id="firstName"
               value={formValues.firstName}
               onChange={handleOnChange}
+              onBlur={handleOnBlur}
             />
             <small
               style={{
@@ -140,6 +152,20 @@ export function App() {
               }}
             >
               {formError?.phone?._errors}
+            </small>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <label htmlFor="message">Conte-nos mais sobre seu negócio</label>
+            <textarea
+              type="text"
+              id="message"
+              value={formValues.message}
+              onChange={handleOnChange}
+              maxLength={255}
+              rows={7}
+            />
+            <small>
+              {formValues.message ? formValues.message.length : 0} / 255
             </small>
           </div>
 
