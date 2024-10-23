@@ -63,10 +63,10 @@ describe('Formulário de Contato', () => {
     fireEvent.change(screen.getByLabelText(/número de celular/i), {
       target: { value: '1234567890' },
     });
-    fireEvent.click(screen.getByLabelText(/web design/i)); // Seleciona um serviço
-    fireEvent.click(screen.getByLabelText(/instagram/i)); // Seleciona uma mídia social
+    fireEvent.click(screen.getByLabelText(/web design/i));
+    fireEvent.click(screen.getByLabelText(/instagram/i));
 
-    const alertSpy = vitest.spyOn(console, "log")
+    const alertSpy = vitest.spyOn(window, "alert")
     
     fireEvent.click(screen.getByText(/enviar mensagem/i));
     expect(alertSpy).toHaveBeenCalledWith('Mensagem enviada com sucesso!');
